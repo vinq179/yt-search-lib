@@ -1,6 +1,6 @@
 /**
  * Simple LRU (Least Recently Used) Cache using localStorage.
- * 
+ *
  * @module cache
  */
 
@@ -33,7 +33,7 @@ export class LRUCache {
 
   /**
    * @private
-   * @param {string[]} keys 
+   * @param {string[]} keys
    */
   _saveKeys(keys) {
     try {
@@ -46,7 +46,7 @@ export class LRUCache {
 
   /**
    * Get an item from the cache.
-   * @param {string} key 
+   * @param {string} key
    * @returns {any|null} The cached value or null if not found/expired.
    */
   get(key) {
@@ -87,14 +87,14 @@ export class LRUCache {
 
   /**
    * Set an item in the cache.
-   * @param {string} key 
-   * @param {any} value 
+   * @param {string} key
+   * @param {any} value
    */
   set(key, value) {
     const fullKey = `${this.namespace}${key}`;
     const item = {
       value,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     try {
@@ -118,12 +118,12 @@ export class LRUCache {
 
   /**
    * Remove a specific item.
-   * @param {string} key 
+   * @param {string} key
    */
   remove(key) {
     try {
       localStorage.removeItem(`${this.namespace}${key}`);
-      const newKeys = this.keys.filter(k => k !== key);
+      const newKeys = this.keys.filter((k) => k !== key);
       this._saveKeys(newKeys);
     } catch (e) {
       console.warn('Cache remove failed', e);
@@ -135,7 +135,7 @@ export class LRUCache {
    */
   clear() {
     try {
-      this.keys.forEach(key => {
+      this.keys.forEach((key) => {
         localStorage.removeItem(`${this.namespace}${key}`);
       });
       localStorage.removeItem(`${this.namespace}keys`);

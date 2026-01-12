@@ -1,4 +1,9 @@
-import { DEFAULT_API_KEY, DEFAULT_CLIENT_CONTEXT, INNERTUBE_BASE_URL, SEARCH_ENDPOINT } from './lib/constants.js';
+import {
+  DEFAULT_API_KEY,
+  DEFAULT_CLIENT_CONTEXT,
+  INNERTUBE_BASE_URL,
+  SEARCH_ENDPOINT,
+} from './lib/constants.js';
 import { LRUCache } from './lib/cache.js';
 import { Transport } from './lib/transport.js';
 import { parseSearchResults } from './lib/parser.js';
@@ -18,10 +23,10 @@ export class YouTubeClient {
   constructor(options = {}) {
     this.apiKey = options.apiKey || DEFAULT_API_KEY;
     this.context = { ...DEFAULT_CLIENT_CONTEXT, ...options.clientContext };
-    
+
     this.transport = new Transport({
       proxyUrl: options.proxyUrl,
-      fetch: options.fetch
+      fetch: options.fetch,
     });
 
     if (options.useCache !== false) {
@@ -52,10 +57,10 @@ export class YouTubeClient {
     }
 
     const url = `${INNERTUBE_BASE_URL}${SEARCH_ENDPOINT}?key=${this.apiKey}`;
-    
+
     const body = {
       context: {
-        client: this.context
+        client: this.context,
       },
       query: query,
     };
@@ -65,7 +70,7 @@ export class YouTubeClient {
       let results = parseSearchResults(rawData);
 
       if (type !== 'all') {
-        results = results.filter(item => item.type === type);
+        results = results.filter((item) => item.type === type);
       }
 
       results = results.slice(0, limit);

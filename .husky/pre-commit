@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# .husky/pre-commit
+
+# Run linting and formatting checks
+# Exit on error
+
+# Check formatting
+echo "Checking formatting with Prettier..."
+npx prettier --check .
+
+# Check linting
+echo "Running ESLint..."
+npx eslint .
+
+echo "Pre-commit checks passed!"

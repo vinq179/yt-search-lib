@@ -1,7 +1,7 @@
 /**
  * Transport layer for handling HTTP requests to InnerTube API.
  * Handles fetch, proxying, and error normalization.
- * 
+ *
  * @module transport
  */
 
@@ -26,7 +26,7 @@ export class Transport {
    */
   async post(url, body) {
     const targetUrl = this.proxyUrl ? `${this.proxyUrl}${url}` : url;
-    
+
     // Some proxies require the target URL to be encoded, others don't.
     // Standard CORS proxies usually take the full URL as path.
     // If the proxy simply forwards, we might need to handle headers carefully.
@@ -52,7 +52,9 @@ export class Transport {
     } catch (error) {
       // Enhance error message
       if (error.message.includes('Failed to fetch')) {
-          throw new Error('Network error: Failed to connect. Check your internet connection or proxy settings.');
+        throw new Error(
+          'Network error: Failed to connect. Check your internet connection or proxy settings.'
+        );
       }
       throw error;
     }

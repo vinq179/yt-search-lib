@@ -1,7 +1,7 @@
 /**
  * Parser for InnerTube API search responses.
  * Extracts useful video information from the deeply nested JSON structure.
- * 
+ *
  * @module parser
  */
 
@@ -26,20 +26,20 @@
 
 /**
  * Extract text from a run or simple text object.
- * @param {Object} data 
+ * @param {Object} data
  * @returns {string}
  */
 function getText(data) {
   if (!data) return '';
   if (typeof data === 'string') return data;
   if (data.simpleText) return data.simpleText;
-  if (data.runs) return data.runs.map(r => r.text).join('');
+  if (data.runs) return data.runs.map((r) => r.text).join('');
   return '';
 }
 
 /**
  * Parse a single video renderer item.
- * @param {Object} item 
+ * @param {Object} item
  * @returns {VideoResult|null}
  */
 function parseVideoRenderer(item) {
@@ -57,13 +57,13 @@ function parseVideoRenderer(item) {
     duration: getText(video.lengthText),
     publishedAt: getText(video.publishedTimeText),
     viewCount: getText(video.viewCountText),
-    badges: video.badges?.map(b => b.metadataBadgeRenderer?.label).filter(Boolean) || []
+    badges: video.badges?.map((b) => b.metadataBadgeRenderer?.label).filter(Boolean) || [],
   };
 }
 
 /**
  * Parse a channel renderer item.
- * @param {Object} item 
+ * @param {Object} item
  * @returns {Object|null}
  */
 function parseChannelRenderer(item) {
@@ -77,13 +77,13 @@ function parseChannelRenderer(item) {
     thumbnails: channel.thumbnail?.thumbnails || [],
     description: getText(channel.descriptionSnippet),
     subscriberCount: getText(channel.subscriberCountText),
-    videoCount: getText(channel.videoCountText)
+    videoCount: getText(channel.videoCountText),
   };
 }
 
 /**
  * Parse a playlist renderer item.
- * @param {Object} item 
+ * @param {Object} item
  * @returns {Object|null}
  */
 function parsePlaylistRenderer(item) {
@@ -96,10 +96,9 @@ function parsePlaylistRenderer(item) {
     title: getText(playlist.title),
     thumbnails: playlist.thumbnails?.[0]?.thumbnails || [], // Playlists have a slightly different structure
     videoCount: getText(playlist.videoCountText),
-    author: getText(playlist.longBylineText)
+    author: getText(playlist.longBylineText),
   };
 }
-
 
 /**
  * Main parser function for search response.
@@ -108,13 +107,15 @@ function parsePlaylistRenderer(item) {
  */
 export function parseSearchResults(response) {
   const results = [];
-  
+
   try {
-    const contents = response.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-    
+    const contents =
+      response.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer
+        ?.contents;
+
     if (!contents) {
-        // Sometimes the structure might be different (e.g. continuations), but for search it's usually this.
-        return [];
+      // Sometimes the structure might be different (e.g. continuations), but for search it's usually this.
+      return [];
     }
 
     for (const section of contents) {
@@ -128,7 +129,7 @@ export function parseSearchResults(response) {
           } else if (item.playlistRenderer) {
             parsedItem = parsePlaylistRenderer(item);
           }
-          
+
           if (parsedItem) {
             results.push(parsedItem);
           }

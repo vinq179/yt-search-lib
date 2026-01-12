@@ -1,0 +1,63 @@
+name: Security
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Run weekly security audit
+    - cron: '0 0 * * 0'
+
+jobs:
+  audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Report audit results
+        if: ${{ failure() }}
+        run: |
+          echo "::warning::Security audit found high-severity vulnerabilities"
+          echo "Please review the audit output above and update dependencies"
+
+  dependency-check:
+    name: Outdated Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated packages
+        run: |
+          outdated=$(npm outdated --parseable --long 2>/dev/null | wc -l)
+          if [ "$outdated" -gt 0 ]; then
+            echo "::warning::Found $outdated outdated packages"
+            npm outdated || true
+          else
+            echo "All packages are up to date"
+          fi

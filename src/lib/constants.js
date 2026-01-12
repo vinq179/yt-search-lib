@@ -1,7 +1,7 @@
 /**
  * Constants for YouTube InnerTube API
  * These are generic values used by the WEB client.
- * 
+ *
  * @module constants
  */
 
