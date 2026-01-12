@@ -15,12 +15,14 @@ A powerful, purely client-side JavaScript library for searching YouTube videos w
 
 ### 1. Installation
 
-Simply copy the `src` directory into your project.
+```bash
+npm install yt-search-lib
+```
 
 ### 2. Usage
 
 ```javascript
-import YouTubeClient from './src/index.js';
+import YouTubeClient from 'yt-search-lib';
 
 // Initialize the client
 const client = new YouTubeClient({

@@ -1,18 +1,34 @@
 {
-  "name": "sisyphus-youtube-search",
-  "version": "1.0.0",
+  "name": "yt-search-lib",
+  "version": "1.0.2",
   "description": "Premium client-side YouTube search library using InnerTube API patterns. No API key required.",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "browser": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sisyphus-labs/youtube-search"
+    "url": "https://github.com/luongnv89/youtube-search"
   },
   "bugs": {
-    "url": "https://github.com/sisyphus-labs/youtube-search/issues"
+    "url": "https://github.com/luongnv89/youtube-search/issues"
   },
-  "homepage": "https://github.com/sisyphus-labs/youtube-search#readme",
+  "homepage": "https://github.com/luongnv89/youtube-search#readme",
   "scripts": {
+    "build": "node build.js",
     "test": "node test.js"
   },
   "keywords": [
@@ -22,8 +38,12 @@
     "client-side",
     "no-api-key",
     "javascript",
-    "browser"
+    "browser",
+    "esmodule"
   ],
   "author": "YouTube Search Contributors",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.19.0"
+  }
 }
