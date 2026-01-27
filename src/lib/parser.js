@@ -57,6 +57,7 @@ function parseVideoRenderer(item) {
     duration: getText(video.lengthText),
     publishedAt: getText(video.publishedTimeText),
     viewCount: getText(video.viewCountText),
+    description: getText(video.detailedMetadataSnippets?.[0]?.snippetText) || getText(video.descriptionSnippet),
     badges: video.badges?.map((b) => b.metadataBadgeRenderer?.label).filter(Boolean) || [],
   };
 }
