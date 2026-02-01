@@ -108,38 +108,62 @@ function parsePlaylistRenderer(item) {
  */
 export function parseSearchResults(response) {
   const results = [];
+  let continuationToken = null;
 
   try {
-    const contents =
+    let contents =
       response.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer
         ?.contents;
 
+    // Handle Continuation Response
+    if (!contents && response.onResponseReceivedCommands) {
+      const action = response.onResponseReceivedCommands.find(cmd => cmd.appendContinuationItemsAction);
+      if (action) {
+        contents = action.appendContinuationItemsAction.continuationItems;
+      }
+    }
+
     if (!contents) {
-      // Sometimes the structure might be different (e.g. continuations), but for search it's usually this.
-      return [];
+      return { results: [], continuationToken: null };
     }
 
     for (const section of contents) {
-      if (section.itemSectionRenderer) {
-        for (const item of section.itemSectionRenderer.contents) {
-          let parsedItem = null;
-          if (item.videoRenderer) {
-            parsedItem = parseVideoRenderer(item);
-          } else if (item.channelRenderer) {
-            parsedItem = parseChannelRenderer(item);
-          } else if (item.playlistRenderer) {
-            parsedItem = parsePlaylistRenderer(item);
-          }
+      // console.log('Section keys:', Object.keys(section));
 
-          if (parsedItem) {
-            results.push(parsedItem);
-          }
+      // Direct Item (Continuation response might have items directly, or inside itemSectionRenderer)
+      // Check if section itself is an item (common in continuations for some endpoints, but search usually wraps in itemSection)
+
+      let items = [];
+      if (section.itemSectionRenderer) {
+        items = section.itemSectionRenderer.contents;
+      } else if (section.videoRenderer || section.channelRenderer || section.playlistRenderer) {
+        // Sometimes items are direct children
+        items = [section];
+      }
+
+      for (const item of items) {
+        let parsedItem = null;
+        if (item.videoRenderer) {
+          parsedItem = parseVideoRenderer(item);
+        } else if (item.channelRenderer) {
+          parsedItem = parseChannelRenderer(item);
+        } else if (item.playlistRenderer) {
+          parsedItem = parsePlaylistRenderer(item);
         }
+
+        if (parsedItem) {
+          results.push(parsedItem);
+        }
+      }
+
+      if (section.continuationItemRenderer) {
+        continuationToken = section.continuationItemRenderer.continuationEndpoint?.continuationCommand?.token;
+        // console.log('Found continuation token:', continuationToken);
       }
     }
   } catch (e) {
     console.error('Error parsing search results:', e);
   }
 
-  return results;
+  return { results, continuationToken };
 }

@@ -44,7 +44,7 @@ export class YouTubeClient {
    * @param {string} [options.type='video'] - Type of results ('video', 'channel', 'playlist', or 'all').
    * @returns {Promise<import('./lib/parser.js').VideoResult[]>}
    */
-  async search(query, { limit = 5, type = 'video' } = {}) {
+  async search(query, { limit = 20, type = 'video' } = {}) {
     if (!query) throw new Error('Query is required');
 
     const cacheKey = `${query}_${limit}_${type}`;
@@ -58,28 +58,59 @@ export class YouTubeClient {
 
     const url = `${INNERTUBE_BASE_URL}${SEARCH_ENDPOINT}?key=${this.apiKey}`;
 
-    const body = {
-      context: {
-        client: this.context,
-      },
+    let combinedResults = [];
+    let continuationToken = null;
+    let attempt = 0;
+    const maxAttempts = 5; // Safety break
+
+    // Initial Search
+    const initialBody = {
+      context: { client: this.context },
       query: query,
     };
 
     try {
-      const rawData = await this.transport.post(url, body);
-      let results = parseSearchResults(rawData);
+      const rawData = await this.transport.post(url, initialBody);
+      const parsed = parseSearchResults(rawData);
+      combinedResults = parsed.results;
+      continuationToken = parsed.continuationToken;
 
+      // Filter type if needed
       if (type !== 'all') {
-        results = results.filter((item) => item.type === type);
+        combinedResults = combinedResults.filter((item) => item.type === type);
       }
 
-      results = results.slice(0, limit);
+      // Fetch Loop
+      while (combinedResults.length < limit && continuationToken && attempt < maxAttempts) {
+        attempt++;
+        const continuationBody = {
+          context: { client: this.context },
+          continuation: continuationToken
+        };
+
+        const nextRaw = await this.transport.post(url, continuationBody);
+        const nextParsed = parseSearchResults(nextRaw);
+
+        let nextResults = nextParsed.results;
+        if (type !== 'all') {
+          nextResults = nextResults.filter((item) => item.type === type);
+        }
+
+        // Deduplicate IDs just in case
+        const existingIds = new Set(combinedResults.map(r => r.id));
+        nextResults = nextResults.filter(r => !existingIds.has(r.id));
+
+        combinedResults = [...combinedResults, ...nextResults];
+        continuationToken = nextParsed.continuationToken;
+      }
+
+      const finalResults = combinedResults.slice(0, limit);
 
       if (this.cache) {
-        this.cache.set(cacheKey, results);
+        this.cache.set(cacheKey, finalResults);
       }
 
-      return results;
+      return finalResults;
     } catch (error) {
       console.error('YouTube Search Error:', error);
       throw error;
